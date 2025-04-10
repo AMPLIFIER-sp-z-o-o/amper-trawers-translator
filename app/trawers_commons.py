@@ -54,4 +54,37 @@ def get_records_trawers(system='NA', table_id='199', query='', fields=None, url=
         print(f"ERROR! Exception: {ex}")
         exit()
 
+def get_payment_form(input):
+    payment_name = ""
+    payment_cash = False
 
+    if input == "G":
+        payment_name = "Gotówka"
+        payment_cash = True
+    elif input == "P":
+        payment_name = "Przelew"
+    elif input == "C":
+        payment_name = "Czek"
+    elif input == "K":
+        payment_name = "Kompensata"
+    elif input == "N":
+        payment_name = "Przedpłata"
+    elif input == "Z":
+        payment_name = "Za pobraniem"
+    elif input == "L":
+        payment_name = "Karta płatnicza"
+    elif input == "R":
+        payment_name = "Kredyt bankowy"
+    elif input == "B":
+        payment_name = "Barter"
+    elif input == "W":
+        payment_name = "Gotówka później"
+        payment_cash = True
+    elif input == "O":
+        payment_name = "Zapłacono"
+    elif input == "T":
+        payment_name = "Według kontraktu"
+    elif input == "I":
+        payment_name = "Inne"
+
+    return [payment_name, payment_cash]
