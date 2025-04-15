@@ -4,6 +4,8 @@ from amper_api.auth import AmplifierJWTAuth
 from amper_api.backend import Backend
 
 from app.products import import_products
+from app.accounts import import_accounts
+from app.stocks import import_stock_locations, import_stocks
 
 AMPER_USERNAME = os.environ.get('AMPER_USERNAME', None)
 AMPER_PASS = os.environ.get('AMPER_PASS', None)
@@ -29,3 +31,8 @@ def main(args):
     amper_ws = Backend(amper_token, AMPER_WS_URL, log_source='amper-trawers-translator')
     if args.i and args.i == 'products':
         import_products(amper_ws)
+    if args.i and args.i == 'accounts':
+        import_accounts(amper_ws)
+    if args.i and args.i == 'stocks':
+        import_stock_locations(amper_ws)
+        import_stocks(amper_ws)
