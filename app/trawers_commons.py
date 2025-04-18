@@ -54,6 +54,57 @@ def get_records_trawers(system='NA', table_id='199', query='', fields=None, url=
         print(f"ERROR! Exception: {ex}")
         exit()
 
+
+def get_liabilities_request(url=None):
+    if not url:
+        from app.cli import TRAWERS_SOA_URL
+        url = TRAWERS_SOA_URL
+    body = f"""
+            <?xml version="1.0" encoding="UTF-8"?>
+                <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns="http://tres.pl/Trawers">
+                    <soapenv:Header/>
+                    <soapenv:Body>
+                        <LiabilitiesRequest>
+                        </LiabilitiesRequest>
+                    </soapenv:Body>
+                </soapenv:Envelope>"""
+    headers = {
+        'Host': str(url),
+        'Content-Type': 'application/soap_xml; charset=utf-8',
+        'Content-Length': str(len(body)),
+        'SOAPAction': str(url) + '/TrawersSOA/LiabilitiesRequest'
+    }
+    try:
+        response = requests.post(url, data=body.encode('utf-8'), headers=headers)
+        return parseXML_liabilities_request(response.text)
+    except Exception as ex:
+        print( f"ERROR! Exception: {ex}")
+        return []
+
+
+def parseXML_liabilities_request(xml):
+        try:
+            doc_data = xml.split('<liabilities>')[1]
+            doc_data = doc_data.split('</liabilities>')[0]
+            doc_data = "<records>" + doc_data + "</records>"
+            data = xmltodict.parse(doc_data)
+            data = json.loads(json.dumps(data))
+            try:
+                for record, rec_value in data['records'].items():
+                    pass
+                if type(rec_value) == dict:
+                    list_return = []
+                    list_return.append(rec_value)
+                    return list_return
+                return rec_value
+            except Exception as ex:
+                print(ex)
+                return {}
+        except Exception as ex:
+            print(ex)
+            return {}
+
+
 def get_payment_form(input):
     payment_name = ""
     payment_cash = False

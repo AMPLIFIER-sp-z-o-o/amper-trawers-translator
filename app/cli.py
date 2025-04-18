@@ -6,6 +6,7 @@ from amper_api.backend import Backend
 from app.products import import_products
 from app.accounts import import_accounts
 from app.stocks import import_stock_locations, import_stocks
+from app.settlements import import_settlements
 
 AMPER_USERNAME = os.environ.get('AMPER_USERNAME', None)
 AMPER_PASS = os.environ.get('AMPER_PASS', None)
@@ -36,3 +37,5 @@ def main(args):
     if args.i and args.i == 'stocks':
         import_stock_locations(amper_ws)
         import_stocks(amper_ws)
+    if args.i and args.i == 'settlements':
+        import_settlements(amper_ws)
