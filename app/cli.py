@@ -2,6 +2,7 @@ import os
 
 from amper_api.auth import AmplifierJWTAuth
 from amper_api.backend import Backend
+from amper_api.log import LogSeverity
 
 from app.products import import_products
 from app.accounts import import_accounts
@@ -30,6 +31,8 @@ def main(args):
         print('Could not authenticate with provided credentials.')
         return
     amper_ws = Backend(amper_token, AMPER_WS_URL, log_source='amper-trawers-translator')
+    if args.i:
+        amper_ws.create_log_entry_async(LogSeverity.Info, f"Started main translator task: {args.i}")
     if args.i and args.i == 'products':
         import_products(amper_ws)
     if args.i and args.i == 'accounts':
