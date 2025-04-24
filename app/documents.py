@@ -5,7 +5,7 @@ from app.trawers_commons import trawers_soa_request, trawers_process_response
 
 
 def export_documents(backend: Backend):
-    documents = backend.get_list_of_documents("APPROVED")
+    documents = backend.get_list_of_documents({"status": "APPROVED"})
     for document in documents:
         try:
             content = create_document(document)
@@ -16,7 +16,7 @@ def export_documents(backend: Backend):
                     {"status": "EXPORTED",
                      "id": document.id}
                 )
-                backend.create_log_entry_async(LogSeverity.info,
+                backend.create_log_entry_async(LogSeverity.Info,
                                                f"Exported document {str(document.id)}: {trawers_document_number[1]}")
             else:
                 backend.create_log_entry_async(LogSeverity.Error, f"Failure while sending document {str(document.id)}: {trawers_document_number[1]}")
@@ -44,7 +44,7 @@ def create_document(document: Document):
         items = items + item
 
     short_number = document.number
-    description = f'{document.description}; Numer:{document.number}'.replace('<', '').replace('>', '')
+    description = f'{document.description}; Nr: {document.number}'.replace('<', '').replace('>', '')
 
     content = f"""
         <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
