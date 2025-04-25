@@ -23,7 +23,7 @@ def export_orders(backend: Backend):
                 backend.create_log_entry_async(LogSeverity.Error, f"Failure while sending order {str(order.token)}: {trawers_order_number[1]}")
 
         except Exception as ex:
-            backend.create_log_entry_async(LogSeverity.Error, f"Error while in function export_orders() while processing document {str(order.token)}.", ex)
+            backend.create_log_entry_async(LogSeverity.Error, f"Error while in function export_orders() while processing order {str(order.token)}.", ex)
 
 
 def create_order(order: Order, backend: Backend):
@@ -64,5 +64,5 @@ def create_order(order: Order, backend: Backend):
         content = content.replace('&', '&amp;').encode('utf-8')
         return content
     except Exception as ex:
-        backend.create_log_entry_async(LogSeverity.Error, f"Error while in function export_orders() while processing document {str(order.token)}.", ex)
+        backend.create_log_entry_async(LogSeverity.Error, f"Error while in function create_order() while processing order {str(order.token)}.", ex)
         return None

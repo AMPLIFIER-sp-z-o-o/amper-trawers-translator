@@ -65,5 +65,5 @@ def create_document(document: Document, backend: Backend):
         content = content.replace('&', '&amp;').encode('utf-8')
         return content
     except Exception as ex:
-        backend.create_log_entry_async(LogSeverity.Error, f"Error while in function export_orders() while processing document {str(order.token)}.", ex)
+        backend.create_log_entry_async(LogSeverity.Error, f"Error while in function create_document() while processing document {str(document.id)}.", ex)
         return None
