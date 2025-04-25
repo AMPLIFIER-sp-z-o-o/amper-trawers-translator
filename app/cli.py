@@ -8,6 +8,8 @@ from app.products import import_products
 from app.accounts import import_accounts
 from app.stocks import import_stock_locations, import_stocks
 from app.settlements import import_settlements
+from app.documents import export_documents
+from app.orders import export_orders
 
 AMPER_USERNAME = os.environ.get('AMPER_USERNAME', None)
 AMPER_PASS = os.environ.get('AMPER_PASS', None)
@@ -42,3 +44,7 @@ def main(args):
         import_stocks(amper_ws)
     if args.i and args.i == 'settlements':
         import_settlements(amper_ws)
+    if args.i and args.i == 'documents':
+        export_documents(amper_ws)
+    if args.i and args.i == 'orders':
+        export_orders(amper_ws)
