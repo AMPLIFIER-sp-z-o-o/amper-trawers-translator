@@ -1,11 +1,12 @@
 from decimal import Decimal
 
-from amper_api.product import Product, UnitOfMeasure
+from amper_api.product import Product, UnitOfMeasure, ProductCategory, ProductCategoryRelation
 from amper_api.log import LogSeverity
+from amper_api.backend import Backend
 from app.trawers_commons import get_records_trawers
 
 
-def import_products(backend):
+def import_products(backend: Backend):
     try:
         fields = ['indeks', 'inazwa', 'nrptu', 'jm', 'jmz', 'opilosc', 'waga', 'ean13', 'opakowan']
         records = get_records_trawers(system='MG', table_id='229', fields=fields)
@@ -81,3 +82,50 @@ def import_products(backend):
         backend.send_unit_of_measures(unit_of_measures)
     except Exception as ex:
         backend.create_log_entry_async(LogSeverity.Error, f"Error while in function import_products()", ex)
+
+
+def import_product_categories(backend: Backend):
+    try:
+        product_categories = []
+
+        product_category = ProductCategory()
+        product_category.external_id = "Trawers"
+        product_category.parent_external_id = None
+        product_category.name = "Trawers"
+        product_category.description = "Trawers"
+        product_category.seo_tags = ""
+        product_category.order = 1
+        product_categories.append(product_category)
+
+        fields = ['ident', 'symbol', 'nazwa']
+        records = get_records_trawers(system='MG', table_id='245', fields=fields, query=f"<where><IDENT>G</IDENT></where>")
+        for record in records:
+            product_category = ProductCategory()
+            product_category.external_id = record["SYMBOL"]
+            product_category.parent_external_id = "Trawers"
+            product_category.name = record["NAZWA"].strip()
+            product_category.description = record["NAZWA"].strip()
+            product_category.seo_tags = ""
+            product_category.order = 1
+            product_categories.append(product_category)
+
+        backend.send_product_categories(product_categories)
+    except Exception as ex:
+        backend.create_log_entry_async(LogSeverity.Error, f"Error while in function import_product_categories()", ex)
+
+
+def import_product_category_relations(backend: Backend):
+    try:
+        product_category_relations = []
+        fields = ['indeks', 'GRUPA']
+        records = get_records_trawers(system='MG', table_id='229', fields=fields)
+        for record in records:
+            product_category_relation = ProductCategoryRelation()
+            product_category_relation.external_id = f'{record["INDEKS"]}_{record["GRUPA"]}'
+            product_category_relation.category_external_id = record["GRUPA"]
+            product_category_relation.product_external_id = record["INDEKS"]
+            product_category_relations.append(product_category_relation)
+
+        backend.send_product_categories_relation(product_category_relations)
+    except Exception as ex:
+        backend.create_log_entry_async(LogSeverity.Error, f"Error while in function import_product_category_relations()", ex)
