@@ -8,7 +8,9 @@ def export_orders(backend: Backend):
     orders = backend.get_list_of_orders({"status": "Pending"})
     for order in orders:
         try:
-            content = create_order(order)
+            content = create_order(order, backend)
+            if content is None:
+                return
             response = trawers_soa_request(content, "orderNew")
             trawers_order_number = trawers_process_response(response)
             if trawers_order_number[0]:
@@ -21,42 +23,46 @@ def export_orders(backend: Backend):
                 backend.create_log_entry_async(LogSeverity.Error, f"Failure while sending order {str(order.token)}: {trawers_order_number[1]}")
 
         except Exception as ex:
-            backend.create_log_entry_async(LogSeverity.Error, f"Error while in function export_orders() while processing document {str(order.token)}.", ex)
+            backend.create_log_entry_async(LogSeverity.Error, f"Error while in function export_orders() while processing order {str(order.token)}.", ex)
 
 
-def create_order(order: Order):
-    customer = order.customer_external_id if order.customer_external_id else 'GOSC00'
-    if '_' in customer:
-        customer = customer.split('_')[0]
+def create_order(order: Order, backend: Backend):
+    try:
+        customer = order.customer_external_id if order.customer_external_id else 'GOSC00'
+        if '_' in customer:
+            customer = customer.split('_')[0]
 
-    items = ""
-    for line in order.lines:
-        item = f"""
-                    <item>
-                        <productKey>{line.product_external_id}</productKey>
-                        <quantity>{str(line.quantity).replace('.', ',')}</quantity>
-                        <price>{line.unit_price_net}</price>
-                        <depot>{line.source_stock_location_name}</depot> 
-                        <note></note>
-                        <memo></memo>
-                    </item>
-                    """
-        items = items + item
+        items = ""
+        for line in order.lines:
+            item = f"""
+                        <item>
+                            <productKey>{line.product_external_id}</productKey>
+                            <quantity>{str(line.quantity).replace('.', ',')}</quantity>
+                            <price>{line.unit_price_net}</price>
+                            <depot>{line.source_stock_location_name}</depot> 
+                            <note></note>
+                            <memo></memo>
+                        </item>
+                        """
+            items = items + item
 
-    description = f'{order.customer_note}; Nr: {order.order_number}'.replace('<', '').replace('>', '')
+        description = f'{order.customer_note}; Nr: {order.order_number}'.replace('<', '').replace('>', '')
 
-    content = f"""
-        <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
-                <soapenv:Header/>
-                <soapenv:Body>
-                    <orderNew>                    
-                        <customerKey>{customer}</customerKey>
-                        {items}
-                        <description>{description}</description>
-                        <note></note>
-                    </orderNew>
-                </soapenv:Body>
-                </soapenv:Envelope> 
-        """
-    content = content.replace('&', '&amp;').encode('utf-8')
-    return content
+        content = f"""
+            <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+                    <soapenv:Header/>
+                    <soapenv:Body>
+                        <orderNew>                    
+                            <customerKey>{customer}</customerKey>
+                            {items}
+                            <description>{description}</description>
+                            <note></note>
+                        </orderNew>
+                    </soapenv:Body>
+                    </soapenv:Envelope> 
+            """
+        content = content.replace('&', '&amp;').encode('utf-8')
+        return content
+    except Exception as ex:
+        backend.create_log_entry_async(LogSeverity.Error, f"Error while in function create_order() while processing order {str(order.token)}.", ex)
+        return None
